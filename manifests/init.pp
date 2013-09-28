@@ -2,7 +2,9 @@ class cloud9 (
   $dir = '/opt/cloud9',
   $user = 'cloud9',
   $group = 'cloud9',
-  $source = 'https://github.com/ajaxorg/cloud9.git') {
+  $source = 'https://github.com/ajaxorg/cloud9.git',
+  $workspace = '~/',
+  $listen = 'localhost') {
 
   class { 'stdlib': }
   class { 'wget': }
@@ -41,4 +43,16 @@ class cloud9 (
     cwd => $dir,
     require => [ Package["libxml2-dev"], Vcsrepo["cloud9"] ],
   }
+
+  file { 'start-script':
+      path => "${dir}/start-workspace.sh",
+      ensure => 'file',
+      content => "#!/bin/sh
+      sh ${dir}/bin/cloud9.sh -l ${listen} -w ${workspace}",
+      owner => $user,
+      group => $group,
+      mode => 755,
+      require => [ Exec["install-cloud9"] ]
+  }
+
 }
