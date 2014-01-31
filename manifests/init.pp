@@ -4,27 +4,22 @@ class cloud9 (
   $group = 'cloud9',
   $source = 'https://github.com/ajaxorg/cloud9.git',
   $workspace = '~/',
-  $listen = 'localhost') {
+  $listen = 'localhost',
+  $version = 'master') {
 
-  class { 'stdlib': }
-  class { 'wget': }
-
-  class { 'nodejs':
-    version => 'v0.8.9',
-    require => [ Package['wget'] ]
-  }
+  class { 'cloud9::nodejs': }
 
   package { 'git':
     ensure => "installed",
   }
 
-  exec { 'apt-update':
-    command => "/usr/bin/apt-get update"
+  # Required by cloud9 when using node >= 0.10
+  package { 'mercurial':
+    ensure => installed
   }
 
   package { 'libxml2-dev':
-    ensure => installed,
-    require  => Exec['apt-update'],
+    ensure => installed
   }
 
   vcsrepo { 'cloud9':
@@ -33,15 +28,16 @@ class cloud9 (
     source => $source,
     provider => git,
     require => Package["git"],
-    revision => 'master',
+    revision => $version,
     owner => $user,
     group => $group,
   }
 
   exec { 'install-cloud9':
-    command => "/usr/local/bin/npm install",
+    command => "npm install",
     cwd => $dir,
-    require => [ Package["libxml2-dev"], Vcsrepo["cloud9"] ],
+    path => [ "/bin/", "/sbin/" , "/usr/bin/", "/usr/sbin/", "/usr/local/bin" ],
+    require => [ Package["libxml2-dev"], Class['cloud9::nodejs'], Vcsrepo["cloud9"] ],
   }
 
   file { 'start-script':
