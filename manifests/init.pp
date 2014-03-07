@@ -5,7 +5,11 @@ class cloud9 (
   $source = 'https://github.com/ajaxorg/cloud9.git',
   $workspace = '~/',
   $listen = 'localhost',
-  $version = 'master') {
+  $port = '3131',
+  $version = 'master',
+  $username,
+  $password
+) {
 
   class { 'cloud9::nodejs': }
 
@@ -41,10 +45,10 @@ class cloud9 (
   }
 
   file { 'start-script':
-      path => "${dir}/start-workspace.sh",
+      path => "${dir}/bin/start-workspace.sh",
       ensure => 'file',
       content => "#!/bin/sh
-      sh ${dir}/bin/cloud9.sh -l ${listen} -w ${workspace}",
+      sh ${dir}/bin/cloud9.sh -l ${listen} -w ${workspace} -p ${port} --username ${username} --password=${password}",
       owner => $user,
       group => $group,
       mode => 755,
